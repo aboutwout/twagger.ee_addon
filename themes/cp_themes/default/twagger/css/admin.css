@@ -1,0 +1,56 @@
+.mor tbody th, .mor tbody td {vertical-align:top;padding-top:12px;font-size:12px;}
+  
+.settings, .instructions {
+  list-style: none;
+  margin: 0;
+  padding:0;
+  height:0;
+  overflow:hidden;
+  opacity:0;
+  -webkit-transition:opacity 0.25s ease-in-out, padding-top 0.25s ease-in-out, height 0.25s ease-in-out;
+  -moz-transition:opacity 0.25s ease-in-out, padding-top 0.25s ease-in-out, height 0.25s ease-in-out;
+  -o-transition:opacity 0.25s ease-in-out, padding-top 0.25s ease-in-out, height 0.25s ease-in-out;
+
+/*
+  -moz-transition-property:opacity, padding-top, height;
+  -moz-transition-duration:0.25s;
+  -moz-transition-timing-function: ease-in-out;
+  -o-transition-property:opacity padding-top height;
+  -o-transition-duration:0.25s;
+  -o-transition-timing-function: ease-in-out;
+*/  
+}
+
+.instructions{font-weight:normal;height:auto;margin-top:.25em;}
+
+
+.settings li{margin:0 5em 0 0;padding:10px 0;border-top: 1px dotted #A7B6BF;}
+.settings select {font-size:12px;width:25em;}
+
+.show_settings .settings, .show_settings .instructions{padding-top:10px;height:6.25em;opacity:1;}
+.show_settings .instructions{padding-top:0;}
+
+/* iToggle ***/
+.itoggle {
+  background: #eee url('../img/itoggle_sprite.png') no-repeat 100% 0;
+  display: block;
+  cursor: pointer;
+  width: 80px;
+  height: 25px;
+  overflow: hidden;
+  border-radius: 5px;
+  -webkit-transition: background-position 0.25s ease-in-out;
+  -moz-transition: background-position, 0.25s, ease-in-out;
+  -o-transition: background-position 0.25s ease-in-out;
+  
+/*  
+  -moz-transition-property: background-position;
+  -moz-transition-duration: 0.25s;
+  -moz-transition-timing-function: ease-in-out;
+  -o-transition-property: background-position;
+  -o-transition-duration: 0.25s;
+  -o-transition-timing-function: ease-in-out;
+*/
+}
+.itoggle_checked {background-position:0 0;}
+.itoggle input {width:100%;height:100%;visibility:hidden;margin:0;}

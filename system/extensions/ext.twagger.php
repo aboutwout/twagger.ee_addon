@@ -161,18 +161,18 @@ class Twagger
 		global $DB, $EXT, $IN, $PREFS, $REGX, $SESS;
 
 		// -- Check if we're not the only one using this hook
-//		if($EXT->last_call !== FALSE)
-//			$out = $EXT->last_call;
+		if($EXT->last_call !== FALSE)
+			$out = $EXT->last_call;
 
-//		if($IN->GBL('C', 'GET') == 'publish' || $IN->GBL('C', 'GET') == 'edit' || $IN->GBL('P', 'GET') == 'extension_settings') {
+		if($IN->GBL('C', 'GET') == 'publish' || $IN->GBL('C', 'GET') == 'edit' || $IN->GBL('P', 'GET') == 'extension_settings') {
 
 			$css = $js = "";
 
-//			if(isset($SESS->cache['Morphine']['cp_styles_included']) === FALSE)
-//			{
+			if(isset($SESS->cache['Morphine']['cp_styles_included']) === FALSE)
+			{
 				$css .= "\n<link rel='stylesheet' type='text/css' media='screen' href='" . $PREFS->ini('theme_folder_url', 1) . "cp_themes/".$PREFS->ini('cp_theme')."/Morphine/css/MOR_screen.css' />";
-//				$SESS->cache['Morphine']['cp_styles_included'] = TRUE;
-//			}
+				$SESS->cache['Morphine']['cp_styles_included'] = TRUE;
+			}
 
 
 			$css .= "\n<link rel='stylesheet' type='text/css' media='screen' href='" . $PREFS->ini('theme_folder_url', 1) . "cp_themes/".$PREFS->ini('cp_theme')."/twagger/css/admin.css' />";
@@ -181,7 +181,7 @@ class Twagger
 			$out = str_replace("</head>", $css . "</head>", $out);
 			$out = str_replace("</body>", $js . "</body>", $out);
 			// make sure we don't add it again
-//		}
+		}
 	
 		return $out;
 	}

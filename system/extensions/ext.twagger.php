@@ -156,8 +156,8 @@ class Twagger
 	 * @return	string The modified control panel html
 	 * @since 	Version 1.4.0
 	 */
-	function show_full_control_panel_end( $out )
-	{
+  function show_full_control_panel_end( $out )
+  {
 		global $DB, $EXT, $IN, $PREFS, $REGX, $SESS;
 
 		// -- Check if we're not the only one using this hook
@@ -174,9 +174,12 @@ class Twagger
 				$SESS->cache['Morphine']['cp_styles_included'] = TRUE;
 			}
 
-
-			$css .= "\n<link rel='stylesheet' type='text/css' media='screen' href='" . $PREFS->ini('theme_folder_url', 1) . "cp_themes/".$PREFS->ini('cp_theme')."/twagger/css/admin.css' />";
-			$js .= "\n<script type='text/javascript' src='" . $PREFS->ini('theme_folder_url', 1) . "cp_themes/".$PREFS->ini('cp_theme')."/twagger/js/admin.js'></script>";
+      if(isset($SESS->cache['Twagger']['cp_styles_included']) === FALSE)
+			{
+  			$css .= "\n<link rel='stylesheet' type='text/css' media='screen' href='" . $PREFS->ini('theme_folder_url', 1) . "cp_themes/".$PREFS->ini('cp_theme')."/twagger/css/admin.css' />";
+  			$js .= "\n<script type='text/javascript' src='" . $PREFS->ini('theme_folder_url', 1) . "cp_themes/".$PREFS->ini('cp_theme')."/twagger/js/admin.js'></script>";
+				$SESS->cache['Twagger']['cp_styles_included'] = TRUE;
+			}
 
 			$out = str_replace("</head>", $css . "</head>", $out);
 			$out = str_replace("</body>", $js . "</body>", $out);

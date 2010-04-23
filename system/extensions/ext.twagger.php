@@ -6,8 +6,6 @@
 * @author Wouter Vervloet
 * @copyright	Copyright (c) 2010, Baseworks
 * @license		http://creativecommons.org/licenses/by-sa/3.0/
-* @link		http://www.baseworks.nl/ee/docs/twagger/
-* @filesource
 * 
 * This work is licensed under the Creative Commons Attribution-Share Alike 3.0 Unported.
 * To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/
@@ -20,7 +18,7 @@ class Twagger
   public $settings            = array();
   
   public $name                = 'Twagger';
-  public $version             = '0.6';
+  public $version             = '0.7';
   public $description         = 'Inline tagging for weblog entries made easy.';
   public $settings_exist      = 'y';
   public $docs_url            = '';
@@ -31,7 +29,9 @@ class Twagger
   * ...
   */  
   function display_tags_for_entry($tagdata, $row, $weblog_obj) {
-    global $DB, $TMPL;
+    global $DB, $TMPL, $FNS;
+    
+    $count=0;
     
     foreach ($TMPL->var_pair as $key => $val) {
       
@@ -39,21 +39,48 @@ class Twagger
       /**  parse tags
       /** ----------------------------------------*/      
       if (preg_match("/tags/", $key)) {
-        $entry_tags = $DB->query("SELECT * FROM exp_twagger_tags WHERE entry_id = ".$row['entry_id']);
+        
+        $params = $FNS->assign_parameters($key);
+        
+        $limit = isset($params['limit']) ? $params['limit'] : 99;
+        $sort = isset($params['sort']) ? $params['sort'] : 'ASC';
+        
+        $query = "SELECT * FROM exp_twagger_tags WHERE entry_id = ".$row['entry_id']." ORDER BY text $sort LIMIT 0, $limit";
+        
+        $entry_tags = $DB->query($query);
 
         // If there are no tags associated with this entry, return
         if($entry_tags->num_rows == 0) return $tagdata;
         
         $output = $tagdata;
-        $chunk = '';
-      
-        $chunk_tmpl = $TMPL->fetch_data_between_var_pairs($tagdata, 'tags');
+        $tmp = '';
         
+        $chunk_tmpl = $TMPL->fetch_data_between_var_pairs($tagdata, 'tags');              
+        
+        preg_match("/".LD."switch="."(.*?)".RD."/s", $tagdata, $switch);
+        $sopt = explode('|', preg_replace('/[\'\"]/', '', $switch[1]));
+                
         foreach ($entry_tags->result as $tag) {
-          $chunk .= $TMPL->swap_var_single('tag', $tag['text'], $chunk_tmpl);
+
+          $sw = $sopt[($count + count($sopt)) % count($sopt)];
+          
+          // Replace the {switch} tag 
+          $chunk = preg_replace("/".LD."switch="."(.*?)".RD."/s", $sw, $chunk_tmpl);
+          
+          // Replace the {count} tag
+          $chunk = str_replace(LD.'count'.RD, ++$count, $chunk);
+          
+          // Replace the {tag} tag
+          $chunk = str_replace(LD.'tag'.RD, $tag['text'], $chunk);
+
+          $tmp .= $chunk;
         }
 
-        $tagdata = preg_replace("/".LD."tags"."(.*?)".RD."(.*?)".LD.SLASH."tags".RD."/s", $chunk, $output);
+        if(isset($params['backspace']) && intval($params['backspace']) > 0) {
+          $tmp = substr($tmp, 0, -intval($params['backspace']));
+        }
+
+        $tagdata = preg_replace("/".LD."tags"."(.*?)".RD."(.*?)".LD.SLASH."tags".RD."/s", $tmp, $output);
       }
     }
     
@@ -111,7 +138,6 @@ class Twagger
   function _parse_tags($str='') {
     global $DB;
 
-
     if(!preg_match_all('/(^|\s)#([a-z0-9-_]+)?/i', $str, $matches)) return $str;
 
     foreach($matches[2] as $match) {
@@ -119,10 +145,7 @@ class Twagger
       $str = preg_replace('/(^|\s)#('.$match.')/', ' <a href="#${2}">#${2}</a>', $str, 1);
     }
 
-    
-    
     $str = preg_replace('/(\\\\#)/', '#', $str);
-  
     $this->_save_tags();
   }
 	
@@ -239,10 +262,6 @@ class Twagger
 								array('name' => strtolower(get_class($this)))
 		);
 
-//		$settings = $this->_get_settings();
-//		$default_settings =  $this->_build_default_settings();
-//		$settings = $this->array_merge_recursive_flat($default_settings, $settings);
-
 		$addon_name = $this->name;
 		$member_group_query = $DB->query("SELECT group_id, group_title FROM exp_member_groups WHERE site_id = ".$PREFS->ini('site_id')." ORDER BY group_title");
 		$weblog_query = $DB->query("SELECT blog_name, blog_title, weblog_id FROM `exp_weblogs` WHERE `site_id` = ".$PREFS->ini('site_id')." ORDER BY `blog_name`");
@@ -310,7 +329,6 @@ class Twagger
 			'show_full_control_panel_end' => 'show_full_control_panel_end',
 			'delete_entries_loop' => 'delete_entries_loop',
 			'weblog_entries_tagdata' => 'display_tags_for_entry'
-//			'weblog_entries_row'  => 'modify_weblog_variables'
 		);
 
 		foreach ($hooks as $hook => $method) {
@@ -355,7 +373,7 @@ class Twagger
 
     if ($current == '' OR $current == $this->version) return FALSE;
     if ($current < '0.1') { }// Update to next version 0.5
-    $DB->query("UPDATE exp_extensions SET version = '".$DB->escape_str($this->version)."' WHERE class = '".get_class($this)."'");
+    $DB->query("UPDATE exp_extensions SET version = '".$DB->escape_str($this->version)."' WHERE class = 'Twagger'");
   }
   // END
 
@@ -364,9 +382,9 @@ class Twagger
   */
   function disable_extension() {
     global $DB;
-    $sql[] = 'DROP TABLE IF EXISTS `exp_'.strtolower(get_class($this)).'_settings`';		
-    $sql[] = 'DROP TABLE IF EXISTS `exp_'.strtolower(get_class($this)).'_tags`';		
-    $sql[] = "DELETE FROM exp_extensions WHERE class = '".get_class($this)."'";		
+    $sql[] = 'DROP TABLE IF EXISTS `exp_twagger_settings`';		
+    $sql[] = 'DROP TABLE IF EXISTS `exp_twagger_tags`';		
+    $sql[] = "DELETE FROM exp_extensions WHERE class = 'Twagger'";		
 
     foreach($sql as $query) {
       $DB->query($query);

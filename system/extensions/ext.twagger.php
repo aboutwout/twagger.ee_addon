@@ -20,7 +20,7 @@ class Twagger
   public $settings            = array();
   
   public $name                = 'Twagger';
-  public $version             = '0.5';
+  public $version             = '0.6';
   public $description         = 'Inline tagging for weblog entries made easy.';
   public $settings_exist      = 'y';
   public $docs_url            = '';
@@ -31,18 +31,32 @@ class Twagger
   * ...
   */  
   function display_tags_for_entry($tagdata, $row, $weblog_obj) {
-    global $DB;
+    global $DB, $TMPL;
     
-    $entry_tags = $DB->query("SELECT * FROM exp_twagger_tags WHERE entry_id = ".$row['entry_id']);
-    
-    if($entry_tags->num_rows == 0) return $tagdata;
-    $html = '<ol>';
-    foreach ($entry_tags->result as $tag) {
-      $html .= "<li>".$tag['text']."</li>";
-    }
-    $html .= '</ol>';
-    $tagdata .= $html;
+    foreach ($TMPL->var_pair as $key => $val) {
+      
+      /** ----------------------------------------
+      /**  parse tags
+      /** ----------------------------------------*/      
+      if (preg_match("/tags/", $key)) {
+        $entry_tags = $DB->query("SELECT * FROM exp_twagger_tags WHERE entry_id = ".$row['entry_id']);
 
+        // If there are no tags associated with this entry, return
+        if($entry_tags->num_rows == 0) return $tagdata;
+        
+        $output = $tagdata;
+        $chunk = '';
+      
+        $chunk_tmpl = $TMPL->fetch_data_between_var_pairs($tagdata, 'tags');
+        
+        foreach ($entry_tags->result as $tag) {
+          $chunk .= $TMPL->swap_var_single('tag', $tag['text'], $chunk_tmpl);
+        }
+
+        $tagdata = preg_replace("/".LD."tags"."(.*?)".RD."(.*?)".LD.SLASH."tags".RD."/s", $chunk, $output);
+      }
+    }
+    
     return $tagdata;
   }
 

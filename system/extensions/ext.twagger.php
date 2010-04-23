@@ -33,6 +33,9 @@ class Twagger
     
     $count=0;
     
+    // TODO: Check settings if field is enabled
+    
+    
     foreach ($TMPL->var_pair as $key => $val) {
       
       /** ----------------------------------------
@@ -56,6 +59,8 @@ class Twagger
         $tmp = '';
         
         $chunk_tmpl = $TMPL->fetch_data_between_var_pairs($tagdata, 'tags');              
+        $chunk_tmpl = str_replace(LD.'total_results'.RD, $entry_tags->num_rows, $chunk_tmpl);
+        
         
         preg_match("/".LD."switch="."(.*?)".RD."/s", $tagdata, $switch);
         $sopt = explode('|', preg_replace('/[\'\"]/', '', $switch[1]));

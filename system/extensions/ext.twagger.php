@@ -22,8 +22,10 @@ class Twagger
   public $description         = 'Inline tagging for weblog entries made easy.';
   public $settings_exist      = 'y';
   public $docs_url            = '';
+  
+  public $prefix              = 'twagger:';
 
-  public $tags = array();
+  public $tags                = array();
 
   /** 
   * ...
@@ -59,24 +61,31 @@ class Twagger
         $tmp = '';
         
         $chunk_tmpl = $TMPL->fetch_data_between_var_pairs($tagdata, 'tags');              
-        $chunk_tmpl = str_replace(LD.'total_results'.RD, $entry_tags->num_rows, $chunk_tmpl);
+        $chunk_tmpl = str_replace(LD.$this->prefix.'total_results'.RD, $entry_tags->num_rows, $chunk_tmpl);
         
         
-        preg_match("/".LD."switch="."(.*?)".RD."/s", $tagdata, $switch);
+        preg_match("/".LD.$this->prefix."switch="."(.*?)".RD."/s", $tagdata, $switch);
         $sopt = explode('|', preg_replace('/[\'\"]/', '', $switch[1]));
                 
         foreach ($entry_tags->result as $tag) {
-
+          
           $sw = $sopt[($count + count($sopt)) % count($sopt)];
           
           // Replace the {switch} tag 
-          $chunk = preg_replace("/".LD."switch="."(.*?)".RD."/s", $sw, $chunk_tmpl);
+          $chunk = preg_replace("/".LD.$this->prefix."switch="."(.*?)".RD."/s", $sw, $chunk_tmpl);
           
           // Replace the {count} tag
-          $chunk = str_replace(LD.'count'.RD, ++$count, $chunk);
+          $chunk = str_replace(LD.$this->prefix.'count'.RD, ++$count, $chunk);
           
           // Replace the {tag} tag
-          $chunk = str_replace(LD.'tag'.RD, $tag['text'], $chunk);
+          $chunk = str_replace(LD.$this->prefix.'tag'.RD, $tag['text'], $chunk);
+
+          $chunk = $FNS->prep_conditionals($chunk, array(
+            $this->prefix.'total_results' => $entry_tags->num_rows,
+            $this->prefix.'count' => $count,
+            $this->prefix.'tag' => $tag['text'],
+            $this->prefix.'switch' => $sw
+          ));
 
           $tmp .= $chunk;
         }

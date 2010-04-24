@@ -6,6 +6,8 @@ Tagging weblog entries Twitter-style. Adding tags is as simple as prefix a word 
 
 Developed by Wouter Vervloet, http://baseworks.nl/
 
+This version of Twagger is developed for ExpressionEngine 1.6.x
+
 This extension makes use of the fabulous [Morphine theme](http://github.com/newism/nsm.morphine.theme "Download the Morphne theme here") made by [Leevi Graham](http://twitter.com/leevigraham "Follow Leevi Graham on Twitter") from [Newism](http://newism.com.au/).
 
 ## Usage

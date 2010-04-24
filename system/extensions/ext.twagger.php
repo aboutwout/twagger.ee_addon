@@ -18,7 +18,7 @@ class Twagger
   public $settings            = array();
   
   public $name                = 'Twagger';
-  public $version             = '0.7';
+  public $version             = '0.8';
   public $description         = 'Inline tagging for weblog entries made easy.';
   public $settings_exist      = 'y';
   public $docs_url            = '';
@@ -47,7 +47,7 @@ class Twagger
         
         $params = $FNS->assign_parameters($key);
         
-        $limit = isset($params['limit']) ? $params['limit'] : 99;
+        $limit = isset($params['limit']) ? $params['limit'] : 25;
         $sort = isset($params['sort']) ? $params['sort'] : 'ASC';
         
         $query = "SELECT * FROM exp_twagger_tags WHERE entry_id = ".$row['entry_id']." ORDER BY text $sort LIMIT 0, $limit";
@@ -57,11 +57,13 @@ class Twagger
         // If there are no tags associated with this entry, return
         if($entry_tags->num_rows == 0) return $tagdata;
         
+        $total_results = $entry_tags->num_rows > $limit ? $limit : $entry_tags->num_rows;
+        
         $output = $tagdata;
         $tmp = '';
         
         $chunk_tmpl = $TMPL->fetch_data_between_var_pairs($tagdata, 'tags');              
-        $chunk_tmpl = str_replace(LD.$this->prefix.'total_results'.RD, $entry_tags->num_rows, $chunk_tmpl);
+        $chunk_tmpl = str_replace(LD.$this->prefix.'total_results'.RD, $total_results, $chunk_tmpl);
         
         
         preg_match("/".LD.$this->prefix."switch="."(.*?)".RD."/s", $tagdata, $switch);
@@ -81,7 +83,7 @@ class Twagger
           $chunk = str_replace(LD.$this->prefix.'tag'.RD, $tag['text'], $chunk);
 
           $chunk = $FNS->prep_conditionals($chunk, array(
-            $this->prefix.'total_results' => $entry_tags->num_rows,
+            $this->prefix.'total_results' => $total_results,
             $this->prefix.'count' => $count,
             $this->prefix.'tag' => $tag['text'],
             $this->prefix.'switch' => $sw
@@ -247,14 +249,14 @@ class Twagger
   {
     global $DB, $DSP, $LANG, $IN, $PREFS;
     
-		$LANG->fetch_language_file('twagger_ext');
+//		$LANG->fetch_language_file('twagger');
     
     $DSP->crumbline = TRUE;
     
-    $DSP->title  = $LANG->line('twagger_extension_name');
+    $DSP->title  = 'Twagger';
     $DSP->crumb  = $DSP->anchor(BASE.AMP.'C=admin'.AMP.'area=utilities', $LANG->line('utilities')).
       $DSP->crumb_item($DSP->anchor(BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=extensions_manager', $LANG->line('extensions_manager')));
-    $DSP->crumb .= $DSP->crumb_item($LANG->line('twagger_extension_name'));
+    $DSP->crumb .= $DSP->crumb_item('Twagger');
     
     $DSP->right_crumb($LANG->line('disable_extension'), BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=toggle_extension_confirm'.AMP.'which=disable'.AMP.'name='.$IN->GBL('name'));
     
@@ -263,7 +265,7 @@ class Twagger
 		$DSP->body = '';
 		$DSP->body .= "<div class='mor settings-form'>";
 
-		$DSP->body .= $DSP->heading($LANG->line('twagger_extension_name') . " <small>{$this->version}</small>");
+		$DSP->body .= $DSP->heading("Twagger <small>{$this->version}</small>");
 		
 		$DSP->body .= $DSP->form_open(
 								array(

@@ -1,9 +1,9 @@
 <div class="tg">
-	<h2><?php echo $LANG->line("twagger_settings_weblog_title") ?></h2>
+
 	<table class="publish-tab-customisation">
 		<thead>
 			<tr>
-				<th><?php echo $LANG->line("twagger_weblog_title") ?></th>
+				<th>Weblog</th>
 				<th><?php echo $LANG->line("twagger_enable?") ?></th>
 			</tr>
 		</thead>
